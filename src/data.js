@@ -40,7 +40,7 @@ export const COLORS = [
 
 // Các chặng trên bản đồ Rừng Xanh
 export const STAGES = [
-  { id: 'find', icon: '🔍', title: 'Tìm bạn thú', hint: 'Đây là con gì?', color: '#7bdff2' },
+  { id: 'find', icon: '🔍', title: 'Tìm bạn thú', hint: 'Nghe tên, chạm hình', color: '#7bdff2' },
   { id: 'feed', icon: '🍯', title: 'Cho bạn ăn', hint: 'Bạn thích ăn gì?', color: '#ffc75f' },
   { id: 'color', icon: '🎈', title: 'Bóng bay sắc màu', hint: 'Đoán màu', color: '#ff8fab' },
   { id: 'party', icon: '🎂', title: 'Tiệc sinh nhật', hint: 'Bữa tiệc lớn', color: '#b8a1ff' },

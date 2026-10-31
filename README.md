@@ -7,7 +7,7 @@ Chơi online: https://quanvpit.github.io/animals-game/
 ## Cốt truyện
 Bác Cú Mèo nhờ Gin giúp chuẩn bị sinh nhật bạn Gấu: các bạn thú đi lạc hết rồi! Gin đi qua các chặng trên bản đồ Rừng Xanh:
 
-- 🔍 **Tìm bạn thú**: máy hỏi "Đây là con gì?", bé chạm vào tên đúng (chạm là nghe đọc tên). Đúng thì máy nói tên con vật và món bạn ấy thích ăn.
+- 🔍 **Tìm bạn thú**: máy đọc "Con gấu đâu nhỉ?", bé chạm vào hình đúng (không cần biết chữ). Đúng thì máy nói "Đây là con gấu!" và món bạn ấy thích ăn.
 - 🍯 **Cho bạn ăn**: bạn thú đói bụng, bé chọn món bạn ấy thích.
 - 🎈 **Bóng bay sắc màu**: máy đọc "Gin tìm quả bóng màu đỏ nào!", bé chạm đúng quả bóng.
 - 🎂 **Tiệc sinh nhật**: mở khi xong 3 chặng trên. Các bạn thú đã tìm được cùng Gin nhảy múa, chạm vào bạn nào thì nghe tên.

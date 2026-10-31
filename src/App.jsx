@@ -319,7 +319,7 @@ function Play({ stage, count, onFound, onFinish, onBack }) {
   const a = r.answer;
 
   const question = () => {
-    if (stage.id === 'find') return 'Đây là con gì nhỉ?';
+    if (stage.id === 'find') return `${cap(a.name)} đâu nhỉ? Gin tìm ${a.name} nào!`;
     if (stage.id === 'feed') return `${cap(friend(a))} đói bụng rồi! ${cap(friend(a))} thích ăn gì nhỉ?`;
     return `Gin tìm quả bóng ${a.name} nào!`;
   };
@@ -333,9 +333,6 @@ function Play({ stage, count, onFound, onFinish, onBack }) {
     if (busy.current || right || wrong.includes(c.id)) return;
     busy.current = true;
     const correct = c.id === a.id;
-
-    if (stage.id === 'find') await speak(cap(c.name));
-    if (!alive.current) return;
 
     if (correct) {
       setRight(c.id);
@@ -382,6 +379,7 @@ function Play({ stage, count, onFound, onFinish, onBack }) {
       let line = t;
       if (stage.id === 'feed') line = `${cap(friend(a))} không thích ăn ${c.food.name} đâu. ${t}`;
       if (stage.id === 'color') line = `Đây là ${c.name}. Gin tìm ${a.name} cơ! ${t}`;
+      if (stage.id === 'find') line = `Đây là ${c.name} mà. Gin tìm ${a.name} nhé!`;
       await speak(line);
       busy.current = false;
     }
@@ -426,10 +424,13 @@ function Play({ stage, count, onFound, onFinish, onBack }) {
       </div>
 
       {/* Phần câu hỏi */}
-      {stage.id !== 'color' ? (
+      {stage.id === 'find' ? (
+        <button className="color-ask" onClick={() => speak(question())}>
+          🔊 {cap(a.name)} đâu?
+        </button>
+      ) : stage.id === 'feed' ? (
         <button className="stage-pic" onClick={() => speak(question())}>
           <Sticker id={a.id} className={right ? 'happy' : 'idle'} />
-          {stage.id === 'find' && <span className="ask-bubble">❓</span>}
           {stage.id === 'feed' && (
             <span className="ask-bubble">{right ? a.food.emoji : '😋'}</span>
           )}
@@ -451,9 +452,9 @@ function Play({ stage, count, onFound, onFinish, onBack }) {
             (hint && c.id === a.id ? ' hint' : '');
           if (stage.id === 'find')
             return (
-              <button key={c.id} className={cls + ' name-choice'} onClick={() => choose(c)}>
-                <span className="speaker">🔊</span>
-                <span>{c.name}</span>
+              <button key={c.id} className={cls + ' sticker-choice'} onClick={() => choose(c)}>
+                <Sticker id={c.id} className={right === c.id ? 'happy' : ''} />
+                {(right === c.id || wrong.includes(c.id)) && <span className="choice-name">{c.name}</span>}
               </button>
             );
           if (stage.id === 'feed')

@@ -539,18 +539,6 @@ img {
 .choices.n3 { --cols: 3; }
 .choices.n4 { --cols: 4; }
 
-.choices.find {
-  --cols: 1;
-  max-width: 520px;
-  grid-template-columns: repeat(var(--cols), 1fr);
-}
-
-@media (min-width: 900px) and (min-aspect-ratio: 4/3) {
-  .choices.find.n2 { --cols: 2; max-width: 760px; }
-  .choices.find.n3 { --cols: 3; max-width: 900px; }
-  .choices.find.n4 { --cols: 2; max-width: 760px; }
-}
-
 @media (max-width: 560px) {
   .choices.n4 { --cols: 2; }
 }
@@ -585,8 +573,10 @@ img {
 }
 
 .food-choice,
+.sticker-choice,
 .balloon-choice {
   aspect-ratio: 1;
+  padding: 10px;
   max-height: 30vh;
   width: 100%;
   justify-self: center;
@@ -929,16 +919,20 @@ img {
 @media (max-aspect-ratio: 3/4) {
   .choices.feed.n2,
   .choices.feed.n3,
+  .choices.find.n2,
+  .choices.find.n3,
   .choices.color.n2,
   .choices.color.n3 {
     --cols: 1;
   }
   .choices.feed,
+  .choices.find,
   .choices.color {
     grid-auto-rows: 1fr;
     align-content: stretch;
   }
   .choices.feed .choice,
+  .choices.find .choice,
   .choices.color .choice {
     aspect-ratio: auto;
     max-height: none;
@@ -950,4 +944,9 @@ img {
   .choices.feed .food {
     font-size: clamp(56px, 11vh, 110px);
   }
+}
+
+.sticker-choice .sticker {
+  width: 100%;
+  height: 100%;
 }
