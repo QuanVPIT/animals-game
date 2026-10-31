@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ANIMALS, MODES, makeQuestion, cap } from './data.js';
-import { speak, cheer, oops, bigCheer, pop, setSoundEnabled } from './sound.js';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ANIMALS, COLORS, STAGES, ROUNDS, GIN_PHOTO, sticker, makeRounds, cap, friend, pick } from './data.js';
+import { speak, cheer, oops, bigCheer, pop, setSoundEnabled, partyTune, munch, balloonPop } from './sound.js';
 
-// Lưu cài đặt nhỏ trên máy; lỗi (chế độ ẩn danh...) thì bỏ qua
+// ---------- Lưu tiến độ trên máy ----------
 const store = {
   get(key, fallback) {
     try {
@@ -21,23 +21,66 @@ const store = {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+function useAlive() {
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  return alive;
+}
+
+const byId = (id) => ANIMALS.find((a) => a.id === id);
+
 export default function App() {
   const [screen, setScreen] = useState('welcome');
-  const [mode, setMode] = useState(null);
+  const [stage, setStage] = useState(null);
+  const [playId, setPlayId] = useState(0);
+  const [storySeen, setStorySeen] = useState(false);
   const [count, setCount] = useState(() => store.get('count', 3));
   const [soundOn, setSoundOn] = useState(() => store.get('sound', true));
-  const [totalStars, setTotalStars] = useState(() => store.get('stars', 0));
+  const [found, setFound] = useState(() => store.get('found', []));
+  const [done, setDone] = useState(() => store.get('done', {}));
 
   useEffect(() => {
     setSoundEnabled(soundOn);
     store.set('sound', soundOn);
   }, [soundOn]);
   useEffect(() => store.set('count', count), [count]);
-  useEffect(() => store.set('stars', totalStars), [totalStars]);
+  useEffect(() => store.set('found', found), [found]);
+  useEffect(() => store.set('done', done), [done]);
 
-  const goMenu = () => {
-    setScreen('menu');
-    speak('Gin Thúi muốn chơi gì nào?');
+  const partyOpen = ['find', 'feed', 'color'].every((s) => done[s] > 0);
+
+  const addFound = (id) => setFound((f) => (f.includes(id) ? f : [...f, id]));
+
+  const go = (s) => {
+    setScreen(s);
+  };
+
+  const openStage = (s) => {
+    pop();
+    if (s.id === 'party') {
+      if (!partyOpen) {
+        speak('Gin xong ba chặng tìm bạn, cho bạn ăn và bóng bay thì bữa tiệc sẽ mở nhé!');
+        return;
+      }
+      go('party');
+      return;
+    }
+    setStage(s);
+    setPlayId((n) => n + 1);
+    go('play');
+  };
+
+  const finishStage = (id) => {
+    const wasOpen = partyOpen;
+    const next = { ...done, [id]: (done[id] || 0) + 1 };
+    setDone(next);
+    const nowOpen = ['find', 'feed', 'color'].every((s) => next[s] > 0);
+    return !wasOpen && nowOpen;
   };
 
   return (
@@ -46,56 +89,94 @@ export default function App() {
         {soundOn ? '🔊' : '🔇'}
       </button>
 
-      {screen === 'welcome' && <Welcome onStart={goMenu} />}
-
-      {screen === 'menu' && (
-        <Menu
-          stars={totalStars}
-          count={count}
-          setCount={setCount}
-          onPick={(m) => {
+      {screen === 'welcome' && (
+        <Welcome
+          onStart={() => {
             pop();
-            if (m === 'free') setScreen('free');
-            else {
-              setMode(m);
-              setScreen('game');
-            }
+            if (storySeen) go('map');
+            else go('story');
           }}
         />
       )}
-
-      {screen === 'game' && mode && (
-        <Game key={mode.id} mode={mode} count={count} onBack={goMenu} onStar={() => setTotalStars((s) => s + 1)} />
+      {screen === 'story' && (
+        <Story
+          onDone={() => {
+            setStorySeen(true);
+            go('map');
+          }}
+        />
       )}
-
-      {screen === 'free' && <FreePlay onBack={goMenu} />}
+      {screen === 'map' && (
+        <MapScreen
+          done={done}
+          found={found}
+          partyOpen={partyOpen}
+          count={count}
+          setCount={setCount}
+          onStage={openStage}
+          onAlbum={() => {
+            pop();
+            go('album');
+          }}
+          onHome={() => go('welcome')}
+        />
+      )}
+      {screen === 'play' && stage && (
+        <Play
+          key={playId}
+          stage={stage}
+          count={count}
+          onFound={addFound}
+          onFinish={finishStage}
+          onBack={() => go('map')}
+        />
+      )}
+      {screen === 'party' && <Party found={found} onBack={() => go('map')} />}
+      {screen === 'album' && <Album found={found} onBack={() => go('map')} />}
     </div>
   );
 }
 
-function Welcome({ onStart }) {
-  const greet = () => speak('Chào bé Gin Cứt Gà! Mình cùng chơi với các bạn thú nhé!');
+// ---------- Ảnh Gin ----------
+function Gin({ size = 160, hat }) {
+  return (
+    <span className="gin" style={{ width: size, height: size, fontSize: size }}>
+      <img src={GIN_PHOTO} alt="Gin" draggable={false} />
+      {hat && <span className="gin-hat">🥳</span>}
+    </span>
+  );
+}
 
+function Sticker({ id, className = '', style, onClick }) {
+  return <img className={'sticker ' + className} src={sticker(id)} alt="" draggable={false} style={style} onClick={onClick} />;
+}
+
+// ---------- Màn chào ----------
+const WELCOME_FRIENDS = ['bear', 'rabbit', 'lion', 'elephant', 'monkey', 'panda'];
+
+function Welcome({ onStart }) {
+  const greet = () => speak('Xin chào Gin Đẹp Trai, Địch Thúi!');
   useEffect(() => {
-    // Một số trình duyệt chặn tự đọc khi chưa chạm; bé chạm vào là đọc
     greet();
   }, []);
 
   return (
     <div className="screen welcome" onClick={greet}>
-      <div className="parade">
-        {['🐶', '🐱', '🐮', '🐷', '🐔', '🐵', '🐰'].map((e, i) => (
-          <span key={e} style={{ animationDelay: `${i * 0.15}s` }}>
-            {e}
-          </span>
+      <div className="welcome-friends">
+        {WELCOME_FRIENDS.map((id, i) => (
+          <Sticker key={id} id={id} className="float" style={{ animationDelay: `${i * 0.3}s` }} />
         ))}
       </div>
+      <div className="gin-wrap">
+        <Gin size={170} />
+      </div>
       <h1 className="hello">
-        Chào bé
+        Xin chào
         <br />
-        <span>Gin Cứt Gà</span>
+        <span>Gin Đẹp Trai,</span>
+        <br />
+        <span className="alt">Địch Thúi!</span>
       </h1>
-      <p className="sub">👋 Cùng chơi với các bạn thú nào!</p>
       <button
         className="big-btn"
         onClick={(e) => {
@@ -103,31 +184,114 @@ function Welcome({ onStart }) {
           onStart();
         }}
       >
-        ▶ Chơi thôi!
+        🌳 Vào rừng thôi!
       </button>
     </div>
   );
 }
 
-function Menu({ stars, count, setCount, onPick }) {
+// ---------- Cốt truyện mở đầu ----------
+const STORY = [
+  { who: 'owl', text: 'Chào Gin Đẹp Trai! Bác là Cú Mèo, sống ở Rừng Xanh.' },
+  { who: 'bear', text: 'Hôm nay là sinh nhật bạn Gấu. Nhưng các bạn thú đi chơi bị lạc hết rồi!' },
+  {
+    who: 'owl',
+    text: 'Gin giúp bác tìm các bạn, cho các bạn ăn no, rồi chọn bóng bay trang trí bữa tiệc nhé!',
+  },
+];
+
+function Story({ onDone }) {
+  const [i, setI] = useState(0);
+  const page = STORY[i];
+  useEffect(() => {
+    speak(page.text);
+  }, [i]);
+
+  const next = () => {
+    pop();
+    if (i + 1 < STORY.length) setI(i + 1);
+    else onDone();
+  };
+
   return (
-    <div className="screen menu">
-      <h2 className="title">Gin Thúi chơi gì nào? 🐾</h2>
-      <div className="star-total">⭐ {stars}</div>
-      <div className="mode-grid">
-        {MODES.map((m) => (
-          <button key={m.id} className="mode-card" style={{ background: m.color }} onClick={() => onPick(m)}>
-            <span className="mode-icon">{m.icon}</span>
-            <span>{m.title}</span>
-          </button>
+    <div className="screen story" onClick={next}>
+      <div className="story-scene" key={i}>
+        <Sticker id={page.who} className="story-char" />
+        <div className="bubble">{page.text}</div>
+      </div>
+      <div className="dots">
+        {STORY.map((_, k) => (
+          <span key={k} className={k === i ? 'on' : ''} />
         ))}
-        <button className="mode-card" style={{ background: '#90f1a8' }} onClick={() => onPick('free')}>
-          <span className="mode-icon">🎈</span>
-          <span>Chơi tự do</span>
+      </div>
+      <button className="big-btn">{i + 1 < STORY.length ? 'Tiếp ▶' : 'Đi thôi! 🚀'}</button>
+      <button
+        className="skip"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDone();
+        }}
+      >
+        Bỏ qua
+      </button>
+    </div>
+  );
+}
+
+// ---------- Bản đồ Rừng Xanh ----------
+function MapScreen({ done, found, partyOpen, count, setCount, onStage, onAlbum, onHome }) {
+  const nextStage = STAGES.find((s) => s.id !== 'party' && !done[s.id]) || (partyOpen ? STAGES[3] : STAGES[0]);
+
+  useEffect(() => {
+    const lines = {
+      find: 'Gin ơi, mình đi tìm các bạn thú nhé!',
+      feed: 'Các bạn thú đói bụng rồi. Gin cho các bạn ăn nhé!',
+      color: 'Mình đi chọn bóng bay cho bữa tiệc nào!',
+      party: 'Bữa tiệc mở rồi! Gin vào dự tiệc thôi!',
+    };
+    speak(lines[nextStage.id]);
+  }, []);
+
+  return (
+    <div className="screen map">
+      <div className="topbar">
+        <button className="back gin-btn" onClick={onHome} aria-label="Về màn chào">
+          <Gin size={48} />
+        </button>
+        <h2 className="title">Rừng Xanh 🌳</h2>
+        <button className="album-btn" onClick={onAlbum}>
+          📒 {found.length}/{ANIMALS.length}
         </button>
       </div>
+
+      <div className="trail">
+        {STAGES.map((s, i) => {
+          const locked = s.id === 'party' && !partyOpen;
+          const isNext = s.id === nextStage.id;
+          return (
+            <div key={s.id} className={'trail-row ' + (i % 2 ? 'right' : 'left')}>
+              <button
+                className={'stage-card' + (locked ? ' locked' : '') + (isNext ? ' next' : '')}
+                style={{ '--c': s.color }}
+                onClick={() => onStage(s)}
+              >
+                <span className="stage-icon">{locked ? '🔒' : s.icon}</span>
+                <span className="stage-title">{s.title}</span>
+                <span className="stage-hint">{locked ? 'Xong 3 chặng để mở' : s.hint}</span>
+                {done[s.id] > 0 && <span className="stage-done">✅ × {done[s.id]}</span>}
+              </button>
+              {isNext && (
+                <span className="gin-marker">
+                  <Gin size={56} />
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
       <div className="level">
-        <span>Số hình:</span>
+        <span>Số lựa chọn:</span>
         {[2, 3, 4].map((n) => (
           <button key={n} className={count === n ? 'on' : ''} onClick={() => setCount(n)}>
             {n}
@@ -138,187 +302,362 @@ function Menu({ stars, count, setCount, onPick }) {
   );
 }
 
-function Game({ mode, count, onBack, onStar }) {
-  const [q, setQ] = useState(null);
-  const [stars, setStars] = useState(0);
+// ---------- Một chặng chơi: 5 câu ----------
+function Play({ stage, count, onFound, onFinish, onBack }) {
+  const rounds = useMemo(() => makeRounds(stage.id, count), []);
+  const [i, setI] = useState(0);
   const [wrong, setWrong] = useState([]);
-  const [picked, setPicked] = useState(null);
+  const [right, setRight] = useState(null);
+  const [msg, setMsg] = useState('');
   const [confetti, setConfetti] = useState(0);
-  const [party, setParty] = useState(false);
-  const [message, setMessage] = useState('');
-  const locked = useRef(false);
-  const alive = useRef(true);
-  const lastId = useRef(null);
+  const [newSticker, setNewSticker] = useState(null);
+  const [result, setResult] = useState(null);
+  const firstTry = useRef(0);
+  const busy = useRef(false);
+  const alive = useAlive();
+  const r = rounds[i];
+  const a = r.answer;
 
-  const next = useCallback(() => {
-    const nq = makeQuestion(mode, count, lastId.current);
-    lastId.current = nq.answer.id;
-    setQ(nq);
-    setWrong([]);
-    setPicked(null);
-    setMessage('');
-    locked.current = false;
-    speak(nq.say);
-  }, [mode, count]);
+  const question = () => {
+    if (stage.id === 'find') return 'Đây là con gì nhỉ?';
+    if (stage.id === 'feed') return `${cap(friend(a))} đói bụng rồi! ${cap(friend(a))} thích ăn gì nhỉ?`;
+    return `Gin tìm quả bóng ${a.name} nào!`;
+  };
 
   useEffect(() => {
-    alive.current = true;
-    next();
-    return () => {
-      alive.current = false;
-    };
-  }, [next]);
+    busy.current = false;
+    speak(question());
+  }, [i]);
 
-  const choose = async (a) => {
-    if (locked.current || !q) return;
-    if (a.id === q.answer.id) {
-      locked.current = true;
-      setPicked(a.id);
-      setConfetti((c) => c + 1);
-      const praise = cheer();
-      setMessage(praise);
-      const extra = mode.id === 'sound' || mode.id === 'name' ? (a.sound ? ` ${cap(a.sound)}!` : '') : '';
-      await speak(`${cap(a.name)}!${extra} ${praise}`);
-      if (!alive.current) return;
-      const total = stars + 1;
-      setStars(total);
-      onStar();
-      if (total % 5 === 0) {
-        setParty(true);
-        await speak(bigCheer());
-        await wait(600);
-        if (!alive.current) return;
-        setParty(false);
+  const choose = async (c) => {
+    if (busy.current || right || wrong.includes(c.id)) return;
+    busy.current = true;
+    const correct = c.id === a.id;
+
+    if (stage.id === 'find') await speak(cap(c.name));
+    if (!alive.current) return;
+
+    if (correct) {
+      setRight(c.id);
+      if (!wrong.length) firstTry.current += 1;
+      setConfetti((n) => n + 1);
+      let line;
+      if (stage.id === 'color') {
+        balloonPop();
+        line = `Đúng rồi! ${cap(a.name)}, ${a.like.text}!`;
       } else {
-        await wait(400);
+        onFound(a.id);
+        setNewSticker(a.id);
+        if (stage.id === 'feed') {
+          munch();
+          line = `Măm măm! ${cap(friend(a))} thích ăn ${a.food.name}! Cảm ơn Gin!`;
+        } else {
+          line = `Đúng rồi! Đây là ${a.name}!${a.sound ? ` ${cap(a.sound)}!` : ''} ${cap(friend(a))} thích ăn ${a.food.name}.`;
+        }
       }
-      if (alive.current) next();
+      const praise = cheer();
+      setMsg(praise);
+      await speak(`${line} ${praise}`);
+      if (!alive.current) return;
+      await wait(500);
+      if (!alive.current) return;
+      setNewSticker(null);
+      if (i + 1 < ROUNDS) {
+        setWrong([]);
+        setRight(null);
+        setMsg('');
+        setI(i + 1);
+      } else {
+        const opened = onFinish(stage.id);
+        const stars = firstTry.current >= ROUNDS - 1 ? 3 : firstTry.current >= 3 ? 2 : 1;
+        setResult({ stars, opened });
+        const big = bigCheer();
+        await speak(big);
+        if (opened && alive.current) await speak('Bữa tiệc sinh nhật đã mở rồi! Gin vào dự tiệc thôi!');
+      }
     } else {
-      if (wrong.includes(a.id)) return;
-      const nw = [...wrong, a.id];
-      setWrong(nw);
-      const text = oops();
-      setMessage(text);
-      locked.current = true;
-      await speak(`Đây là ${a.name}. ${text}`);
-      locked.current = false;
-      if (alive.current) speak(q.say);
+      setWrong([...wrong, c.id]);
+      const t = oops();
+      setMsg(t);
+      let line = t;
+      if (stage.id === 'feed') line = `${cap(friend(a))} không thích ăn ${c.food.name} đâu. ${t}`;
+      if (stage.id === 'color') line = `Đây là ${c.name}. Gin tìm ${a.name} cơ! ${t}`;
+      await speak(line);
+      busy.current = false;
     }
   };
 
-  if (!q) return null;
-  const hint = wrong.length >= 2;
+  if (result) {
+    return (
+      <div className="screen result">
+        <Gin size={140} hat />
+        <div className="result-stars">
+          {[1, 2, 3].map((n) => (
+            <span key={n} className={n <= result.stars ? 'lit' : ''} style={{ animationDelay: `${n * 0.25}s` }}>
+              ⭐
+            </span>
+          ))}
+        </div>
+        <h2 className="title">Xong chặng {stage.title}!</h2>
+        {result.opened && <p className="sub">🎂 Bữa tiệc đã mở rồi!</p>}
+        <button className="big-btn" onClick={onBack}>
+          🗺️ Về bản đồ
+        </button>
+        <Confetti big />
+      </div>
+    );
+  }
+
+  const hint = wrong.length >= 2 && !right;
 
   return (
-    <div className="screen game" style={{ '--accent': mode.color }}>
+    <div className="screen play" style={{ '--accent': stage.color }}>
       <div className="topbar">
         <button className="back" onClick={onBack}>
           ⬅
         </button>
-        <div className="stars">
-          {Array.from({ length: 5 }, (_, i) => (
-            <span key={i} className={i < stars % 5 || (stars > 0 && stars % 5 === 0 && party) ? 'lit' : ''}>
-              ⭐
+        <div className="paws">
+          {Array.from({ length: ROUNDS }, (_, k) => (
+            <span key={k} className={k < i || (k === i && right) ? 'lit' : ''}>
+              🐾
             </span>
           ))}
         </div>
       </div>
 
-      <button className="prompt" onClick={() => speak(q.say)} aria-label="Nghe lại">
-        <span className={'prompt-pic' + (q.shadow && !picked ? ' shadow' : '')}>{q.show}</span>
-        <span className="prompt-label">{q.label}</span>
-        <span className="replay">🔁</span>
-      </button>
+      {/* Phần câu hỏi */}
+      {stage.id !== 'color' ? (
+        <button className="stage-pic" onClick={() => speak(question())}>
+          <Sticker id={a.id} className={right ? 'happy' : 'idle'} />
+          {stage.id === 'find' && <span className="ask-bubble">❓</span>}
+          {stage.id === 'feed' && (
+            <span className="ask-bubble">{right ? a.food.emoji : '😋'}</span>
+          )}
+        </button>
+      ) : (
+        <button className="color-ask" onClick={() => speak(question())}>
+          🎈 Bóng <b>{a.name.replace('màu ', '')}</b> đâu?
+        </button>
+      )}
 
-      <div className={`choices n${q.choices.length}`}>
-        {q.choices.map((a) => {
-          const isRight = picked === a.id;
-          const isWrong = wrong.includes(a.id);
+      {/* Các lựa chọn */}
+      <div className={`choices n${r.choices.length} ${stage.id}`}>
+        {r.choices.map((c) => {
+          const cls =
+            'choice' +
+            (right === c.id ? ' right' : '') +
+            (wrong.includes(c.id) ? ' wrong' : '') +
+            (right && right !== c.id ? ' faded' : '') +
+            (hint && c.id === a.id ? ' hint' : '');
+          if (stage.id === 'find')
+            return (
+              <button key={c.id} className={cls + ' name-choice'} onClick={() => choose(c)}>
+                <span className="speaker">🔊</span>
+                <span>{c.name}</span>
+              </button>
+            );
+          if (stage.id === 'feed')
+            return (
+              <button key={c.id} className={cls + ' food-choice'} onClick={() => choose(c)}>
+                <span className="food">{c.food.emoji}</span>
+                {(right === c.id || wrong.includes(c.id)) && <span className="choice-name">{c.food.name}</span>}
+              </button>
+            );
           return (
             <button
-              key={a.id}
-              className={
-                'choice' +
-                (isRight ? ' right' : '') +
-                (isWrong ? ' wrong' : '') +
-                (hint && a.id === q.answer.id && !picked ? ' hint' : '') +
-                (picked && !isRight ? ' faded' : '')
-              }
-              onClick={() => choose(a)}
+              key={c.id}
+              className={cls + ' balloon-choice' + (right === c.id ? ' popped' : '')}
+              onClick={() => choose(c)}
             >
-              <span className="choice-pic">{a.emoji}</span>
-              {(isRight || isWrong) && <span className="choice-name">{a.name}</span>}
+              <Balloon hex={c.hex} />
+              {wrong.includes(c.id) && <span className="choice-name">{c.name}</span>}
             </button>
           );
         })}
       </div>
 
-      <div className="message">{message}</div>
+      <div className="message">
+        {stage.id === 'color' && right && a.like && (
+          <span className="like">
+            {a.like.animal ? <Sticker id={a.like.animal} className="mini" /> : <span className="mini-emoji">{a.like.emoji}</span>}
+          </span>
+        )}
+        {msg}
+      </div>
 
-      {confetti > 0 && <Confetti key={confetti} />}
-      {party && (
-        <div className="party">
-          <div className="party-box">
-            <div className="party-star">🌟</div>
-            <div>Gin Thúi giỏi quá!</div>
-            <div className="party-count">⭐ × {stars}</div>
-          </div>
-          <Confetti big />
+      {newSticker && (
+        <div className="new-sticker">
+          <Sticker id={newSticker} />
+          <span>📒 Thêm vào album!</span>
         </div>
       )}
+      {confetti > 0 && <Confetti key={confetti} />}
     </div>
   );
 }
 
-function FreePlay({ onBack }) {
-  const [active, setActive] = useState(null);
+function Balloon({ hex }) {
+  return (
+    <svg className="balloon" viewBox="0 0 100 150" aria-hidden>
+      <path d="M50 108 Q46 125 54 135 Q60 143 50 150" stroke="#888" strokeWidth="2" fill="none" />
+      <ellipse cx="50" cy="55" rx="40" ry="50" fill={hex} />
+      <path d="M44 103 L56 103 L50 112 Z" fill={hex} />
+      <ellipse cx="35" cy="35" rx="9" ry="15" fill="#fff" opacity="0.45" transform="rotate(-25 35 35)" />
+    </svg>
+  );
+}
 
-  const tap = (a) => {
-    setActive(a.id + Date.now());
+// ---------- Bữa tiệc sinh nhật ----------
+const GUESTS_FALLBACK = ['bear', 'rabbit', 'monkey', 'elephant', 'lion', 'panda', 'cat', 'dog'];
+
+function Party({ found, onBack }) {
+  const guests = useMemo(() => {
+    const list = ['bear', ...found.filter((id) => id !== 'bear')];
+    return (list.length >= 6 ? list : [...new Set([...list, ...GUESTS_FALLBACK])]).slice(0, 12);
+  }, [found]);
+  const [jump, setJump] = useState(null);
+
+  const celebrate = () => {
+    partyTune();
+    speak('Hoan hô! Chúc mừng sinh nhật bạn Gấu! Cảm ơn Gin Đẹp Trai đã giúp các bạn thú!');
+  };
+
+  useEffect(() => {
+    celebrate();
+  }, []);
+
+  const tapGuest = (id) => {
+    const a = byId(id);
+    setJump(id + Date.now());
     pop();
-    speak(`${cap(a.name)}${a.sound ? `. ${cap(a.sound)}!` : '!'}`);
+    speak(`${cap(a.name)}${a.sound ? `. ${cap(a.sound)}!` : ''}`);
   };
 
   return (
-    <div className="screen free">
+    <div className="screen party">
       <div className="topbar">
         <button className="back" onClick={onBack}>
           ⬅
         </button>
-        <h2 className="title small">Chạm vào bạn thú nào! 🎈</h2>
+        <h2 className="title">🎉 Tiệc sinh nhật bạn Gấu</h2>
       </div>
-      <div className="free-grid">
-        {ANIMALS.map((a) => (
+      <div className="garland">🎈🎊🎈🎊🎈🎊🎈</div>
+      <div className="party-center">
+        <Gin size={130} hat />
+        <span className="cake">🎂</span>
+      </div>
+      <div className="guests">
+        {guests.map((id, k) => (
           <button
-            key={a.id}
-            className={'free-card' + (active?.startsWith(a.id) ? ' bounce' : '')}
-            onClick={() => tap(a)}
-            onAnimationEnd={() => setActive(null)}
+            key={id}
+            className={'guest' + (jump?.startsWith(id) ? ' jump' : '')}
+            style={{ animationDelay: `${(k % 4) * 0.2}s` }}
+            onClick={() => tapGuest(id)}
+            onAnimationEnd={(e) => e.animationName === 'jump' && setJump(null)}
           >
-            {a.emoji}
+            <Sticker id={id} />
           </button>
         ))}
+      </div>
+      <button className="big-btn small" onClick={celebrate}>
+        🎶 Hát mừng nào!
+      </button>
+      <FloatingBalloons />
+    </div>
+  );
+}
+
+function FloatingBalloons() {
+  const items = useMemo(
+    () =>
+      Array.from({ length: 10 }, (_, k) => ({
+        hex: COLORS[k % COLORS.length].hex,
+        left: Math.random() * 90,
+        delay: Math.random() * 6,
+        dur: 7 + Math.random() * 5,
+      })),
+    []
+  );
+  return (
+    <div className="float-balloons" aria-hidden>
+      {items.map((b, k) => (
+        <span key={k} style={{ left: `${b.left}%`, animationDelay: `${b.delay}s`, animationDuration: `${b.dur}s` }}>
+          <Balloon hex={b.hex} />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Album sticker ----------
+function Album({ found, onBack }) {
+  const [jump, setJump] = useState(null);
+
+  useEffect(() => {
+    speak(
+      found.length
+        ? `Gin đã tìm được ${found.length} bạn thú rồi! Chạm vào bạn nào để nghe nhé!`
+        : 'Album còn trống. Gin đi tìm các bạn thú nhé!'
+    );
+  }, []);
+
+  const tap = (a) => {
+    if (!found.includes(a.id)) {
+      speak('Bạn này còn đang trốn. Gin đi tìm nhé!');
+      return;
+    }
+    setJump(a.id + Date.now());
+    pop();
+    speak(`${cap(a.name)}.${a.sound ? ` ${cap(a.sound)}!` : ''} ${cap(friend(a))} thích ăn ${a.food.name}.`);
+  };
+
+  return (
+    <div className="screen album">
+      <div className="topbar">
+        <button className="back" onClick={onBack}>
+          ⬅
+        </button>
+        <h2 className="title">
+          📒 Album của Gin · {found.length}/{ANIMALS.length}
+        </h2>
+      </div>
+      <div className="album-grid">
+        {ANIMALS.map((a) => {
+          const has = found.includes(a.id);
+          return (
+            <button
+              key={a.id}
+              className={'album-card' + (has ? '' : ' hidden') + (jump?.startsWith(a.id) ? ' jump' : '')}
+              onClick={() => tap(a)}
+              onAnimationEnd={() => setJump(null)}
+            >
+              <Sticker id={a.id} />
+              <span className="album-name">{has ? a.name : '?'}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
+// ---------- Pháo hoa ----------
 const PIECES = ['⭐', '🎉', '💖', '✨', '🌈', '🎈', '🍭'];
 
 function Confetti({ big }) {
   const n = big ? 40 : 18;
   return (
     <div className="confetti" aria-hidden>
-      {Array.from({ length: n }, (_, i) => (
+      {Array.from({ length: n }, (_, k) => (
         <span
-          key={i}
+          key={k}
           style={{
             left: `${Math.random() * 100}%`,
             animationDelay: `${Math.random() * 0.5}s`,
             fontSize: `${20 + Math.random() * 24}px`,
           }}
         >
-          {PIECES[i % PIECES.length]}
+          {PIECES[k % PIECES.length]}
         </span>
       ))}
     </div>

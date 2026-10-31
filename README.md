@@ -1,18 +1,21 @@
-# Bé Đoán Con Vật 🐶
+# Gin Ở Rừng Xanh 🌳
 
 Game đoán con vật cho bé 2–3 tuổi (React + Vite).
 
 Chơi online: https://quanvpit.github.io/animals-game/
 
-## Cách chơi
-- 🔊 **Nghe tên**: máy đọc tên con vật, bé chạm đúng hình.
-- 🍌 **Ai thích ăn?**: hiện thức ăn, bé chọn con vật thích ăn món đó.
-- 🎵 **Ai kêu thế?**: máy đọc tiếng kêu (gâu gâu, meo meo…), bé chọn con vật.
-- 🌑 **Tìm bóng**: hiện bóng đen, bé tìm con vật đúng.
-- 🎈 **Chơi tự do**: chạm con nào thì nghe tên và tiếng kêu con đó, không có đúng sai.
+## Cốt truyện
+Bác Cú Mèo nhờ Gin giúp chuẩn bị sinh nhật bạn Gấu: các bạn thú đi lạc hết rồi! Gin đi qua các chặng trên bản đồ Rừng Xanh:
 
-Chọn sai 2 lần thì hình đúng sẽ sáng lên để gợi ý. Cứ 5 câu đúng là được ăn mừng to.
-Chạm vào khung câu hỏi để nghe lại. Ở menu chỉnh được số hình mỗi câu (2, 3 hoặc 4).
+- 🔍 **Tìm bạn thú**: máy hỏi "Đây là con gì?", bé chạm vào tên đúng (chạm là nghe đọc tên). Đúng thì máy nói tên con vật và món bạn ấy thích ăn.
+- 🍯 **Cho bạn ăn**: bạn thú đói bụng, bé chọn món bạn ấy thích.
+- 🎈 **Bóng bay sắc màu**: máy đọc "Gin tìm quả bóng màu đỏ nào!", bé chạm đúng quả bóng.
+- 🎂 **Tiệc sinh nhật**: mở khi xong 3 chặng trên. Các bạn thú đã tìm được cùng Gin nhảy múa, chạm vào bạn nào thì nghe tên.
+- 📒 **Album**: mỗi bạn thú tìm được thành một sticker trong album (20 bạn).
+
+Mỗi chặng 5 câu. Sai 2 lần thì đáp án đúng sáng lên gợi ý. Ở bản đồ chỉnh được số lựa chọn (2, 3, 4).
+
+Hình con vật nằm ở `public/stickers/`, ảnh Gin ở `public/gin.webp`. Danh sách con vật, thức ăn, màu ở `src/data.js`.
 
 ## Chạy
 ```bash

@@ -1,72 +1,94 @@
-// Danh sách con vật. `sound` = tiếng kêu, `food` = thức ăn (null nếu không dùng trong màn đó)
+// Hình sticker nằm trong public/stickers/<id>.webp
+export const sticker = (id) => `${import.meta.env.BASE_URL}stickers/${id}.webp`;
+export const GIN_PHOTO = `${import.meta.env.BASE_URL}gin.webp`;
+
+// 20 bạn thú trong Rừng Xanh. `food` = món bạn ấy thích, `sound` = tiếng kêu (nếu có)
 export const ANIMALS = [
-  { id: 'cho', emoji: '🐶', name: 'con chó', sound: 'gâu gâu', food: { emoji: '🦴', name: 'xương' } },
-  { id: 'meo', emoji: '🐱', name: 'con mèo', sound: 'meo meo', food: { emoji: '🐟', name: 'cá' } },
-  { id: 'bo', emoji: '🐮', name: 'con bò', sound: 'ò ò', food: { emoji: '🌾', name: 'cỏ' } },
-  { id: 'ga', emoji: '🐔', name: 'con gà', sound: 'ò ó o', food: { emoji: '🌽', name: 'ngô' } },
-  { id: 'vit', emoji: '🦆', name: 'con vịt', sound: 'cạp cạp', food: { emoji: '🐌', name: 'ốc' } },
-  { id: 'lon', emoji: '🐷', name: 'con lợn', sound: 'ụt ịt', food: { emoji: '🥬', name: 'rau' } },
-  { id: 'khi', emoji: '🐵', name: 'con khỉ', sound: 'khẹc khẹc', food: { emoji: '🍌', name: 'chuối' } },
-  { id: 'tho', emoji: '🐰', name: 'con thỏ', sound: null, food: { emoji: '🥕', name: 'cà rốt' } },
-  { id: 'gau', emoji: '🐻', name: 'con gấu', sound: 'gừ gừ', food: { emoji: '🍯', name: 'mật ong' } },
-  { id: 'sutu', emoji: '🦁', name: 'con sư tử', sound: 'gừm gừm', food: { emoji: '🍖', name: 'thịt' } },
-  { id: 'ech', emoji: '🐸', name: 'con ếch', sound: 'ộp ộp', food: { emoji: '🦟', name: 'muỗi' } },
-  { id: 'chuot', emoji: '🐭', name: 'con chuột', sound: 'chít chít', food: { emoji: '🧀', name: 'phô mai' } },
-  { id: 'ngua', emoji: '🐴', name: 'con ngựa', sound: 'hí hí', food: { emoji: '🍎', name: 'táo' } },
-  { id: 'cuu', emoji: '🐑', name: 'con cừu', sound: 'be be', food: null },
-  { id: 'chim', emoji: '🐦', name: 'con chim', sound: 'líu lo', food: null },
-  { id: 'voi', emoji: '🐘', name: 'con voi', sound: null, food: null },
-  { id: 'ho', emoji: '🐯', name: 'con hổ', sound: 'gầm gừ', food: null },
-  { id: 'rua', emoji: '🐢', name: 'con rùa', sound: null, food: null },
+  { id: 'bear', name: 'con gấu', food: { emoji: '🍯', name: 'mật ong' }, sound: 'gừ gừ' },
+  { id: 'fox', name: 'con cáo', food: { emoji: '🍇', name: 'quả nho' } },
+  { id: 'rabbit', name: 'con thỏ', food: { emoji: '🥕', name: 'cà rốt' } },
+  { id: 'koala', name: 'con gấu túi', food: { emoji: '🌿', name: 'lá cây' } },
+  { id: 'lion', name: 'con sư tử', food: { emoji: '🍖', name: 'thịt' }, sound: 'gừm gừm' },
+  { id: 'giraffe', name: 'con hươu cao cổ', food: { emoji: '🌿', name: 'lá cây' } },
+  { id: 'elephant', name: 'con voi', food: { emoji: '🍉', name: 'dưa hấu' } },
+  { id: 'panda', name: 'con gấu trúc', food: { emoji: '🎋', name: 'lá tre' } },
+  { id: 'monkey', name: 'con khỉ', food: { emoji: '🍌', name: 'quả chuối' }, sound: 'khẹc khẹc' },
+  { id: 'hedgehog', name: 'con nhím', food: { emoji: '🍎', name: 'quả táo' } },
+  { id: 'owl', name: 'con cú mèo', food: { emoji: '🐛', name: 'con sâu' }, sound: 'cú cú' },
+  { id: 'penguin', name: 'con chim cánh cụt', food: { emoji: '🐟', name: 'con cá' } },
+  { id: 'tiger', name: 'con hổ', food: { emoji: '🍖', name: 'thịt' }, sound: 'gầm gừ' },
+  { id: 'deer', name: 'con hươu', food: { emoji: '🌾', name: 'cỏ' } },
+  { id: 'squirrel', name: 'con sóc', food: { emoji: '🌰', name: 'hạt dẻ' } },
+  { id: 'dog', name: 'con chó', food: { emoji: '🦴', name: 'khúc xương' }, sound: 'gâu gâu' },
+  { id: 'cat', name: 'con mèo', food: { emoji: '🐟', name: 'con cá' }, sound: 'meo meo' },
+  { id: 'turtle', name: 'con rùa', food: { emoji: '🥬', name: 'rau xanh' } },
+  { id: 'parrot', name: 'con vẹt', food: { emoji: '🌻', name: 'hạt hướng dương' } },
+  { id: 'bee', name: 'con ong', food: { emoji: '🌸', name: 'mật hoa' }, sound: 'vo ve' },
 ];
 
-const pick = (list) => list[Math.floor(Math.random() * list.length)];
-const shuffle = (list) => [...list].sort(() => Math.random() - 0.5);
-
-// Các cách chơi. `pool` = con vật dùng được, `ask` = nội dung câu hỏi
-export const MODES = [
-  {
-    id: 'name',
-    icon: '🔊',
-    title: 'Nghe tên',
-    color: '#ff8fab',
-    pool: ANIMALS,
-    ask: (a) => ({ show: '🔊', label: a.name, say: `${cap(a.name)} đâu? Gin Thúi chỉ ${a.name} nào!` }),
-  },
-  {
-    id: 'food',
-    icon: '🍌',
-    title: 'Ai thích ăn?',
-    color: '#ffc75f',
-    pool: ANIMALS.filter((a) => a.food),
-    ask: (a) => ({ show: a.food.emoji, label: a.food.name, say: `Ai thích ăn ${a.food.name} nhỉ?` }),
-  },
-  {
-    id: 'sound',
-    icon: '🎵',
-    title: 'Ai kêu thế?',
-    color: '#7bdff2',
-    pool: ANIMALS.filter((a) => a.sound),
-    ask: (a) => ({ show: '🎵', label: `${cap(a.sound)}!`, say: `${cap(a.sound)}, ${a.sound}! Ai kêu thế nhỉ?` }),
-  },
-  {
-    id: 'shadow',
-    icon: '🌑',
-    title: 'Tìm bóng',
-    color: '#b8a1ff',
-    pool: ANIMALS,
-    ask: (a) => ({ show: a.emoji, shadow: true, label: 'Bóng của con nào?', say: 'Bóng của con nào đây nhỉ?' }),
-  },
+// Màu cho trò bóng bay. `like` = bạn thú/đồ vật có màu đó để bé liên tưởng
+export const COLORS = [
+  { id: 'red', name: 'màu đỏ', hex: '#e53935', like: { animal: 'parrot', text: 'giống bạn Vẹt đấy' } },
+  { id: 'yellow', name: 'màu vàng', hex: '#fdd835', like: { animal: 'bee', text: 'giống bạn Ong đấy' } },
+  { id: 'green', name: 'màu xanh lá cây', hex: '#43a047', like: { animal: 'turtle', text: 'giống bạn Rùa đấy' } },
+  { id: 'blue', name: 'màu xanh da trời', hex: '#1e88e5', like: { emoji: '🌤️', text: 'giống bầu trời đấy' } },
+  { id: 'orange', name: 'màu cam', hex: '#fb8c00', like: { animal: 'fox', text: 'giống bạn Cáo đấy' } },
+  { id: 'pink', name: 'màu hồng', hex: '#f06292', like: { emoji: '🌸', text: 'giống bông hoa đấy' } },
+  { id: 'purple', name: 'màu tím', hex: '#8e24aa', like: { emoji: '🍇', text: 'giống quả nho đấy' } },
+  { id: 'brown', name: 'màu nâu', hex: '#8d5a3b', like: { animal: 'bear', text: 'giống bạn Gấu đấy' } },
 ];
 
-// Câu hỏi mới: 1 đáp án đúng + các con khác, không lặp lại con vừa hỏi
-export function makeQuestion(mode, count, lastId) {
-  const pool = mode.pool.filter((a) => a.id !== lastId);
-  const answer = pick(pool);
-  const others = shuffle(mode.pool.filter((a) => a.id !== answer.id)).slice(0, count - 1);
-  return { answer, choices: shuffle([answer, ...others]), ...mode.ask(answer) };
-}
+// Các chặng trên bản đồ Rừng Xanh
+export const STAGES = [
+  { id: 'find', icon: '🔍', title: 'Tìm bạn thú', hint: 'Đây là con gì?', color: '#7bdff2' },
+  { id: 'feed', icon: '🍯', title: 'Cho bạn ăn', hint: 'Bạn thích ăn gì?', color: '#ffc75f' },
+  { id: 'color', icon: '🎈', title: 'Bóng bay sắc màu', hint: 'Đoán màu', color: '#ff8fab' },
+  { id: 'party', icon: '🎂', title: 'Tiệc sinh nhật', hint: 'Bữa tiệc lớn', color: '#b8a1ff' },
+];
 
-export function cap(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+export const ROUNDS = 5;
+
+export const shuffle = (list) => {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+export const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+export const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// "con gấu" -> "bạn Gấu" (cách gọi thân mật trong truyện)
+export const friend = (a) => 'bạn ' + cap(a.name.replace(/^con /, '').replace(/^chim /, ''));
+
+// Tạo danh sách câu hỏi cho một chặng: mỗi câu có đáp án và các lựa chọn
+export function makeRounds(stage, count) {
+  if (stage === 'color') {
+    let last = null;
+    return Array.from({ length: ROUNDS }, () => {
+      const answer = pick(COLORS.filter((c) => c.id !== last));
+      last = answer.id;
+      const others = shuffle(COLORS.filter((c) => c.id !== answer.id)).slice(0, count - 1);
+      return { answer, choices: shuffle([answer, ...others]) };
+    });
+  }
+  return shuffle(ANIMALS)
+    .slice(0, ROUNDS)
+    .map((answer) => {
+      // Chặng "cho ăn": lựa chọn là các món khác nhau
+      const pool =
+        stage === 'feed'
+          ? ANIMALS.filter((a) => a.food.name !== answer.food.name)
+          : ANIMALS.filter((a) => a.id !== answer.id);
+      const others = [];
+      for (const a of shuffle(pool)) {
+        if (others.length === count - 1) break;
+        if (stage === 'feed' && others.some((o) => o.food.name === a.food.name)) continue;
+        others.push(a);
+      }
+      return { answer, choices: shuffle([answer, ...others]) };
+    });
 }

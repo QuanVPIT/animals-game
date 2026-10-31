@@ -109,51 +109,72 @@ const CHEER_SOUNDS = [
   () => applause(1.2),
 ];
 
+// Tên gọi của bé, chọn ngẫu nhiên cho vui
+const NAMES = ['Gin Đẹp Trai', 'Gin Thúi', 'Gin Đẹp Trai'];
+const fill = (t) => t.replaceAll('{n}', pick(NAMES));
+
 // Lời khen đa dạng cho bé
 const PRAISES = [
-  'Giỏi quá Gin Thúi ơi!',
-  'Gin Thúi siêu quá!',
-  'Đúng rồi! Gin Thúi thông minh ghê!',
-  'Hoan hô Gin Thúi!',
-  'Tuyệt vời! Thơm Gin Thúi một cái nào!',
-  'Oa! Gin Thúi giỏi nhất nhà!',
-  'Gin Thúi chỉ đúng rồi, vỗ tay nào!',
-  'Quá đỉnh luôn Gin Thúi ơi!',
-  'Yeah! Gin Thúi làm được rồi!',
-  'Gin Thúi ơi, con giỏi quá đi!',
-  'Chính xác! Gin Thúi là số một!',
-  'Hay quá hay quá! Gin Thúi giỏi ghê!',
+  'Giỏi quá {n} ơi!',
+  '{n} siêu quá!',
+  'Hoan hô {n}!',
+  'Tuyệt vời! Thơm {n} một cái nào!',
+  'Oa! {n} giỏi nhất nhà!',
+  '{n} chọn đúng rồi, vỗ tay nào!',
+  'Quá đỉnh luôn {n} ơi!',
+  'Yeah! {n} làm được rồi!',
+  'Chính xác! {n} là số một!',
+  'Hay quá hay quá! {n} giỏi ghê!',
+  'Bác Cú Mèo khen {n} thông minh quá!',
+  'Các bạn thú đang vỗ tay cho {n} kìa!',
 ];
 
 const TRY_AGAIN = [
-  'Chưa đúng rồi, Gin Thúi thử lại nha!',
-  'Ồ, không phải con này. Gin Thúi tìm lại nào!',
-  'Gần đúng rồi! Gin Thúi thử con khác xem!',
-  'Hì hì, chưa phải. Gin Thúi chọn lại nha!',
+  'Chưa đúng rồi, {n} thử lại nha!',
+  'Ồ, chưa phải rồi. {n} tìm lại nào!',
+  'Gần đúng rồi! {n} thử cái khác xem!',
+  'Hì hì, chưa phải. {n} chọn lại nha!',
 ];
 
 const BIG_PRAISES = [
-  'Oa! Gin Thúi được thêm năm ngôi sao rồi! Giỏi quá đi!',
-  'Năm ngôi sao cho Gin Thúi! Hoan hô, hoan hô!',
-  'Gin Thúi là nhà thám hiểm động vật giỏi nhất!',
+  'Oa! {n} xong chặng này rồi! Giỏi quá đi!',
+  'Hoan hô {n}! Các bạn thú cảm ơn {n} nhiều lắm!',
+  '{n} là nhà thám hiểm giỏi nhất Rừng Xanh!',
 ];
 
 export function cheer() {
   pick(CHEER_SOUNDS)();
-  return pick(PRAISES);
+  return fill(pick(PRAISES));
 }
 
 export function oops() {
   tone(300, 0, 0.18, { type: 'triangle', to: 180, vol: 0.2 });
-  return pick(TRY_AGAIN);
+  return fill(pick(TRY_AGAIN));
 }
 
 export function bigCheer() {
   applause(2);
   [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.25, { type: 'triangle', vol: 0.25 }));
-  return pick(BIG_PRAISES);
+  return fill(pick(BIG_PRAISES));
 }
 
 export function pop() {
   tone(600, 0, 0.12, { to: 1200, vol: 0.25 });
+}
+
+// Nhạc vui cho bữa tiệc (giai điệu tự sáng tác)
+export function partyTune() {
+  const notes = [523, 523, 659, 784, 659, 784, 1047, 880, 784, 659, 784, 1047];
+  notes.forEach((f, i) => tone(f, i * 0.18, 0.22, { type: 'triangle', vol: 0.22 }));
+  applause(2.4);
+}
+
+// Tiếng "măm măm" khi cho ăn
+export function munch() {
+  [0, 0.16, 0.32].forEach((s) => tone(260, s, 0.1, { type: 'square', to: 180, vol: 0.12 }));
+}
+
+// Tiếng bóng nổ
+export function balloonPop() {
+  tone(900, 0, 0.08, { type: 'square', to: 120, vol: 0.3 });
 }
