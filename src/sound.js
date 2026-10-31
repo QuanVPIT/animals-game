@@ -110,7 +110,7 @@ const CHEER_SOUNDS = [
 ];
 
 // Tên gọi của bé, chọn ngẫu nhiên cho vui
-const NAMES = ['Gin Đẹp Trai', 'Gin Thúi', 'Gin Đẹp Trai'];
+const NAMES = ['Gin Đẹp Trai', 'Gin Thúi', 'Gin Đẹp Trai', 'Địch Thúi'];
 const fill = (t) => t.replaceAll('{n}', pick(NAMES));
 
 // Lời khen đa dạng cho bé
